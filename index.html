@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1b4332">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>LS Bidder</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;padding:10px;background:#e2e8f0;color:#1e293b;font:14px/1.4 system-ui,-apple-system,sans-serif}
+    #arb-bid-2026{max-width:560px;margin:0 auto;background:#f8faf9;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);border:2px solid #1b4332;overflow:hidden}
+    #arb-bid-2026 .hd{background:#1b4332;color:#fff;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+    #arb-bid-2026 .hd b{font-size:15px}
+    #arb-bid-2026 .bd{padding:10px 12px}
+    #arb-bid-2026 .sum{background:#1b4332;color:#fff;padding:10px 12px;border-radius:8px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    #arb-bid-2026 .tot{font-size:22px;font-weight:800;color:#d8f3dc}
+    #arb-bid-2026 .sec{background:#fff;border:1px solid #cbd5e1;border-radius:7px;margin-bottom:8px;overflow:hidden}
+    #arb-bid-2026 .st{background:#2d6a4f;color:#fff;padding:8px 10px;font-weight:700;font-size:13px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none}
+    #arb-bid-2026 .sb{padding:10px}
+    #arb-bid-2026 .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    #arb-bid-2026 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+    #arb-bid-2026 label{display:block;font-size:11px;font-weight:600;color:#334e41;margin-bottom:2px}
+    #arb-bid-2026 input,#arb-bid-2026 select,#arb-bid-2026 textarea{width:100%;padding:6px 7px;border:1px solid #d4a373;background:#fffbeb;border-radius:4px;font-size:14px;color:#7c2d12;font-weight:600}
+    #arb-bid-2026 input:focus,#arb-bid-2026 textarea:focus{outline:2px solid #2d6a4f;background:#fff}
+    #arb-bid-2026 .br{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+    #arb-bid-2026 .btn{background:#2d6a4f;color:#fff;border:0;padding:7px 10px;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer}
+    #arb-bid-2026 .btn:active{background:#1b4332}
+    #arb-bid-2026 .alt{background:#344e41}
+    #arb-bid-2026 .del{background:#ef4444;padding:4px 8px}
+    #arb-bid-2026 table{width:100%;border-collapse:collapse;font-size:12px}
+    #arb-bid-2026 th{background:#344e41;color:#fff;text-align:left;padding:5px;font-size:11px}
+    #arb-bid-2026 td{padding:3px;border-bottom:1px solid #e2e8f0}
+    #arb-bid-2026 .hid{display:none}
+    #arb-bid-2026 .kv{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed #e2e8f0;font-size:13px}
+  </style>
+</head>
+<body>
+<div id="arb-bid-2026">
+  <div class="hd"><b>🌲 Side Work Bid Calculator</b></div>
+  <div class="bd">
+    <div class="sum">
+      <div><div style="font-size:10px;opacity:.85">ESTIMATED CLIENT BID</div><div class="tot" id="ab-tot">$0.00</div></div>
+      <div style="text-align:right;font-size:12px"><div>Labor: <b id="ab-hrs">0.00 hrs</b></div><div>Trips: <b id="ab-trp">0</b></div></div>
+    </div>
+
+    <div class="sec">
+      <div class="st" data-t="s1"><span>1. Client, Distances &amp; Gas Lookup</span><span class="arr">▾</span></div>
+      <div class="sb" id="s1">
+        <div class="g2">
+          <div><label>Client First Name</label><input id="c-name" value="" placeholder="First name"></div>
+          <div><label>Gas Price ($/gal)</label><input type="number" step="0.01" id="c-gas" placeholder="e.g. 3.85"></div>
+        </div>
+        <div style="margin-top:6px"><label>Client Property Address</label><input id="c-addr" value="" placeholder="Street address, City, State ZIP"></div>
+        <div style="margin-top:6px"><label>Dump Site</label>
+          <select id="d-sel">
+            <option value="2250 N 200 W, Provo, UT">2250 N 200 W, Provo, UT</option>
+            <option value="1625 S Industrial Pkwy, Provo, UT 84601">1625 S Industrial Pkwy, Provo, UT 84601</option>
+            <option value="__CUSTOM__">Custom dump address...</option>
+          </select>
+        </div>
+        <div id="d-cst-wrap" class="hid" style="margin-top:6px"><label>Custom Dump Address</label><input id="d-cst" placeholder="Enter dump address"></div>
+        <div class="br">
+          <button class="btn" id="m-site" type="button">🗺️ Home → Site</button>
+          <button class="btn" id="m-dump" type="button">🚛 Site → Dump</button>
+          <button class="btn alt" id="m-rent" type="button">🛠️ Home → Rental</button>
+          <button class="btn alt" id="m-gas" type="button">⛽ Provo Gas Prices</button>
+        </div>
+        <div class="g2" style="margin-top:8px">
+          <div><label>Home → Site Miles (1-way)</label><input type="number" step="0.1" id="d-smi" value="0"></div>
+          <div><label>Home → Site Minutes (1-way)</label><input type="number" step="1" id="d-smn" value="0"></div>
+          <div><label>Site → Dump Miles (1-way)</label><input type="number" step="0.1" id="d-dmi" value="" placeholder="e.g. 2.5"></div>
+          <div><label>Site → Dump Hours (1-way)</label><input type="number" step="0.05" id="d-dhr" value="" placeholder="e.g. 0.4"></div>
+          <div><label>Dump Loads (Trips)</label><input type="number" step="1" id="d-lds" value="" placeholder="Auto or #"></div>
+          <div><label>Extra Clean-up Buffer (hrs)</label><input type="number" step="0.1" id="d-cln" value="0"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="st" data-t="s2"><span>2. Plant-by-Plant Scope</span><div style="display:flex;align-items:center;gap:6px"><button class="btn" id="add-pl" type="button">+ Add Plant</button><span class="arr">▸</span></div></div>
+      <div class="sb hid" id="s2" style="padding:6px">
+        <table><thead><tr><th style="width:28%">Plant</th><th style="width:32%">Scope</th><th style="width:15%">Prune(m)</th><th style="width:15%">Clean(m)</th><th style="width:10%"></th></tr></thead><tbody id="pl-tb"></tbody></table>
+        <div style="display:flex;justify-content:space-between;margin-top:5px;padding:4px 6px;background:#f0f7f4;border-radius:4px;font-size:11px">
+          <span>Prune: <b id="p-hrs">0.00h</b></span><span>Clean: <b id="c-hrs">0.00h</b></span><span>Line Quote: <b id="q-tot">$0.00</b></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="st" data-t="s3"><span>3. Optional: Volume &amp; Stump Rental</span><span class="arr">▸</span></div>
+      <div class="sb hid" id="s3">
+        <div class="g2">
+          <div><label>Tree Height (ft)</label><input type="number" id="v-h" value="" placeholder="e.g. 25"></div>
+          <div><label>Trunk Base Diam (ft)</label><input type="number" step="0.1" id="v-d" value="" placeholder="e.g. 1.5"></div>
+        </div>
+        <div style="margin:4px 0 7px;font-size:11px">Est. Trailer Loads: <b id="v-out">0.0 – 0.0 loads</b></div>
+        <div class="g3">
+          <div><label>Include Rental?</label><select id="r-inc"><option>No</option><option>Yes</option></select></div>
+          <div><label>Stump Diam (in)</label><input type="number" id="r-sd" value="0"></div>
+          <div><label>Rental Fee ($)</label><input type="number" id="r-fee" value="0"></div>
+          <div><label>Rental Miles (1-way)</label><input type="number" step="0.1" id="r-mi" value="0"></div>
+          <div><label>Rental Drive (1-way hr)</label><input type="number" step="0.05" id="r-hr" value="0"></div>
+          <div><label>Rental Add-On</label><div style="padding:5px;background:#d8f3dc;color:#1b4332;font-weight:700;border-radius:4px;text-align:right" id="r-out">$0.00</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="st" data-t="s4"><span>4. Hourly Rate &amp; Saved Defaults</span><span class="arr">▸</span></div>
+      <div class="sb hid" id="s4">
+        <div class="g3">
+          <div><label>Hourly Rate ($/hr)</label><input type="number" id="s-rate"></div>
+          <div><label>Equip Fee ($)</label><input type="number" id="s-eq"></div>
+          <div><label>Dump Fee ($/ld)</label><input type="number" id="s-dmp"></div>
+          <div><label>Liability ($)</label><input type="number" id="s-lia" value="0"></div>
+          <div><label>Maint Hrs</label><input type="number" step="0.1" id="s-mhr" value="0"></div>
+          <div><label>Truck MPG</label><input type="number" id="s-mpg"></div>
+        </div>
+        <div style="margin-top:6px"><label>Home Base Address</label><input id="s-home"></div>
+        <div class="g2" style="margin-top:6px">
+          <div><label>Dump Address</label><input id="s-dump"></div>
+          <div><label>Rental Address</label><input id="s-rent"></div>
+        </div>
+        <div class="br"><button class="btn" id="save-def" type="button">💾 Save as Default</button></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="st" data-t="s5"><span>5. Cost Breakdown</span><span class="arr">▸</span></div>
+      <div class="sb hid" id="s5">
+        <div class="kv"><span>Pruning + Equipment</span><b id="b-prn">$0.00</b></div>
+        <div class="kv"><span>Clean-up Labor</span><b id="b-cln">$0.00</b></div>
+        <div class="kv"><span>Disposal (Dump Labor, Fees &amp; Fuel)</span><b id="b-dmp">$0.00</b></div>
+        <div class="kv"><span>Worksite Commute (Drive &amp; Fuel)</span><b id="b-com">$0.00</b></div>
+        <div class="kv"><span>Overhead, Rentals &amp; Maintenance</span><b id="b-ovr">$0.00</b></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="st" data-t="s6"><span>6. Client Quote Message</span><div style="display:flex;align-items:center;gap:6px"><button class="btn" id="cp-msg" type="button">📋 Copy</button><span class="arr">▸</span></div></div>
+      <div class="sb hid" id="s6">
+        <label>Optional Custom Scope Notes</label>
+        <textarea id="m-note" rows="2" placeholder="Optional custom work details..."></textarea>
+        <div style="margin:6px 0;display:flex;align-items:center;gap:6px"><input type="checkbox" id="m-shb" style="width:auto"><label for="m-shb" style="margin:0">Include Optional Custom Work</label></div>
+        <textarea id="m-out" rows="8" style="background:#f0f7f4;color:#1e293b;font-weight:400;border-color:#2d6a4f"></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const KEY='arb_bid_cfg_v3';
+  const DUMPS=['2250 N 200 W, Provo, UT','1625 S Industrial Pkwy, Provo, UT 84601'];
+  const DEF={rate:75,dumpLab:0.4,eqFee:10,dmpFee:5,mpg:20,gas:'',tL:8,tW:4,tH:3,pack:0.65,home:'1357 Cinnamon Ridge Circle Provo, UT 84606',dump:DUMPS[0],rent:'Home Depot, Provo, UT'};
+  let saved={};
+  try{saved=JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){}
+  const S=Object.assign({},DEF,saved);
+  const $=id=>document.getElementById(id);
+  const n=id=>parseFloat($(id).value)||0;
+  const f=v=>'$'+v.toFixed(2);
+  const NL='\n';
+  let manualLoads=false;
+
+  $('c-gas').value=S.gas;
+  $('s-rate').value=S.rate;
+  $('s-eq').value=S.eqFee;
+  $('s-dmp').value=S.dmpFee;
+  $('s-mpg').value=S.mpg;
+  $('s-home').value=S.home;
+  $('s-dump').value=S.dump;
+  $('s-rent').value=S.rent;
+  $('d-cst').value=S.dump;
+
+  document.querySelectorAll('[data-t]').forEach(h=>{
+    h.onclick=e=>{
+      if(e.target.tagName==='BUTTON')return;
+      const body=$(h.dataset.t);
+      body.classList.toggle('hid');
+      const arr=h.querySelector('.arr');
+      if(arr)arr.textContent=body.classList.contains('hid')?'▸':'▾';
+    };
+  });
+
+  function getDumpAddr(){
+    const v=$('d-sel').value;
+    return v==='__CUSTOM__'?($('d-cst').value.trim()||$('s-dump').value.trim()):v;
+  }
+  function syncDumpUI(){
+    const v=$('d-sel').value;
+    if(v==='__CUSTOM__'){
+      $('d-cst-wrap').classList.remove('hid');
+      $('s-dump').value=$('d-cst').value;
+    }else{
+      $('d-cst-wrap').classList.add('hid');
+      $('s-dump').value=v;
+    }
+  }
+  if(DUMPS.includes(S.dump)){$('d-sel').value=S.dump;}
+  else{$('d-sel').value='__CUSTOM__';$('d-cst').value=S.dump;}
+  syncDumpUI();
+
+  $('d-sel').addEventListener('change',syncDumpUI);
+  $('d-cst').addEventListener('input',()=>{$('s-dump').value=$('d-cst').value;});
+  $('s-dump').addEventListener('input',()=>{
+    const v=$('s-dump').value.trim();
+    if(DUMPS.includes(v)){$('d-sel').value=v;$('d-cst-wrap').classList.add('hid');}
+    else{$('d-sel').value='__CUSTOM__';$('d-cst').value=v;$('d-cst-wrap').classList.remove('hid');}
+  });
+
+  const tb=$('pl-tb');
+  function addRow(nm='',sc='',pm='',cm=''){
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><input class="pn" value="${nm}" placeholder="Plant"></td><td><input class="ps" value="${sc}" placeholder="Scope"></td><td><input type="number" class="pp" value="${pm}" placeholder="0"></td><td><input type="number" class="pc" value="${cm}" placeholder="0"></td><td><button type="button" class="btn del">✕</button></td>`;
+    tr.querySelector('.del').onclick=()=>{tr.remove();calc();};
+    tr.querySelectorAll('input').forEach(i=>i.oninput=calc);
+    tb.appendChild(tr);calc();
+  }
+  addRow();
+
+  $('add-pl').onclick=()=>{
+    const s2=$('s2');
+    if(s2.classList.contains('hid')){
+      s2.classList.remove('hid');
+      const arr=document.querySelector('[data-t="s2"] .arr');
+      if(arr)arr.textContent='▾';
+    }
+    addRow();
+  };
+
+  const go=(a,b)=>window.open('https://www.google.com/maps/dir/'+encodeURIComponent(a)+'/'+encodeURIComponent(b),'_blank');
+  $('m-site').onclick=()=>go($('s-home').value,$('c-addr').value);
+  $('m-dump').onclick=()=>go($('c-addr').value,getDumpAddr());
+  $('m-rent').onclick=()=>go($('s-home').value,$('s-rent').value);
+  $('m-gas').onclick=()=>window.open('https://www.google.com/search?q='+encodeURIComponent('current regular gas prices in Provo UT'),'_blank');
+
+  $('save-def').onclick=()=>{
+    try{localStorage.setItem(KEY,JSON.stringify({rate:n('s-rate'),eqFee:n('s-eq'),dmpFee:n('s-dmp'),mpg:n('s-mpg'),gas:$('c-gas').value.trim(),home:$('s-home').value,dump:getDumpAddr(),rent:$('s-rent').value}));}catch(e){}
+    $('save-def').textContent='✅ Saved!';setTimeout(()=>$('save-def').textContent='💾 Save as Default',1500);
+  };
+
+  $('cp-msg').onclick=()=>{
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText($('m-out').value).catch(()=>{});}
+    $('cp-msg').textContent='✅ Copied!';setTimeout(()=>$('cp-msg').textContent='📋 Copy',1500);
+  };
+
+  $('d-lds').addEventListener('input',()=>{manualLoads=$('d-lds').value.trim()!=='';});
+  $('v-h').addEventListener('input',()=>{if(!$('v-h').value.trim()&&!$('v-d').value.trim()&&!manualLoads)$('d-lds').value='';});
+  $('v-d').addEventListener('input',()=>{if(!$('v-h').value.trim()&&!$('v-d').value.trim()&&!manualLoads)$('d-lds').value='';});
+
+  function calc(){
+    const R=n('s-rate'),gas=n('c-gas'),mpg=n('s-mpg')||20;
+    let pM=0,cM=0,qTot=0;
+    tb.querySelectorAll('tr').forEach(tr=>{
+      const nm=tr.querySelector('.pn').value.trim(),pm=parseFloat(tr.querySelector('.pp').value)||0,cm=parseFloat(tr.querySelector('.pc').value)||0;
+      pM+=pm;cM+=cm;if(nm)qTot+=Math.round(((pm/60)*R)*100)/100;
+    });
+    const pH=pM/60,cH=(cM/60)+n('d-cln');
+    $('p-hrs').textContent=pH.toFixed(2)+'h';$('c-hrs').textContent=cH.toFixed(2)+'h';$('q-tot').textContent=f(qTot);
+
+    const cap=S.tL*S.tW*S.tH*S.pack,tH=n('v-h'),tD=n('v-d');
+    let autoLds=0;
+    if(tH>0&&tD>0){
+      const tv=Math.PI*Math.pow(tD/2,2)*tH;
+      const lo=(tv*3)/cap,hi=(tv*4)/cap;
+      $('v-out').textContent=lo.toFixed(1)+' – '+hi.toFixed(1)+' loads';
+      autoLds=Math.max(1,Math.ceil(hi));
+      if(!manualLoads)$('d-lds').value=String(autoLds);
+    }else{
+      $('v-out').textContent='0.0 – 0.0 loads';
+      if(!manualLoads)$('d-lds').value='';
+    }
+
+    const sd=n('r-sd'),gH=(10*sd)/60,rMi=n('r-mi'),rHr=n('r-hr'),rFee=n('r-fee');
+    const rTot=rFee+(((rMi*2)/mpg)*gas)+((gH+rHr*2)*R);
+    $('r-out').textContent=f(rTot);
+    const incRental=$('r-inc').value==='Yes';
+    const rAdd=incRental?rTot:0;
+    const grindH=incRental?gH:0;
+
+    const lds=n('d-lds'),dMi=n('d-dmi'),dHr=n('d-dhr'),dLab=lds*S.dumpLab,dDrv=dHr*2*lds,dFuel=((dMi*2*lds)/mpg)*gas,dFees=lds*n('s-dmp');
+    const mHr=n('s-mhr'),sMi=n('d-smi'),sDrv1=n('d-smn')/60;
+    const workH=pH+cH+dLab+dDrv+mHr+grindH;
+    const trp=workH>0?1:0;
+    const sDrv=sDrv1*2*trp,sFuel=((sMi*2*trp)/mpg)*gas;
+
+    const bPrn=pH*R+n('s-eq'),bCln=cH*R,bDmp=(dLab+dDrv)*R+dFuel+dFees,bCom=sDrv*R+sFuel,bOvr=n('s-lia')+rAdd+mHr*R;
+    const grand=bPrn+bCln+bDmp+bCom+bOvr;
+
+    $('ab-tot').textContent=f(grand);$('ab-hrs').textContent=(workH+sDrv).toFixed(2)+' hrs';$('ab-trp').textContent=trp;
+    $('b-prn').textContent=f(bPrn);$('b-cln').textContent=f(bCln);$('b-dmp').textContent=f(bDmp);$('b-com').textContent=f(bCom);$('b-ovr').textContent=f(bOvr);
+
+    const nm=$('c-name').value.trim(),greet=nm?`Good morning, ${nm}!`:'Good morning!',oth=grand-qTot-bCln,nt=$('m-note').value.trim();
+    let msg=`${greet} Thanks again for reaching out—lots of great plants and a really fun property.${NL}${NL}As far as bidding goes, I put together some numbers this morning. For the pruning, clean-up, and disposal, I'm estimating about ${f(grand)}.${NL}${NL}Here's the breakdown:${NL}• ${f(qTot)} for the pruning${NL}• ${f(bCln)} for the clean-up labor${NL}• ${f(oth)} for equipment, dump labor/fees, and fuel`;
+    if(nt)msg+=`${NL}${NL}${nt}`;
+    if($('m-shb').checked)msg+=`${NL}${NL}Also, I prune shrubs as well—if that interests you, let me know and I'd be happy to put together a bid for those too.`;
+    msg+=`${NL}${NL}Let me know what you think when you have a moment, and thanks again for your time. I know you're busy!`;
+    $('m-out').value=msg;
+  }
+
+  document.querySelectorAll('input,select,textarea').forEach(i=>{if(i.id!=='m-out'){i.oninput=calc;i.onchange=calc;}});
+  calc();
+})();
+</script>
+</body>
+</html>
