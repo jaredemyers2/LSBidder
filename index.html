@@ -230,11 +230,71 @@
     addRow();
   };
 
-  const go=(a,b)=>window.open('https://www.google.com/maps/dir/'+encodeURIComponent(a)+'/'+encodeURIComponent(b),'_blank');
-  $('m-site').onclick=()=>go($('s-home').value,$('c-addr').value);
-  $('m-dump').onclick=()=>go($('c-addr').value,getDumpAddr());
-  $('m-rent').onclick=()=>go($('s-home').value,$('s-rent').value);
-  $('m-gas').onclick=()=>window.open('https://www.google.com/search?q='+encodeURIComponent('current regular gas prices in Provo UT'),'_blank');
+  const GEO_CACHE=new Map();
+  function setNumField(id,val){
+    const el=$(id);
+    if(!el||val===undefined||val===null||!Number.isFinite(Number(val)))return;
+    el.value=String(val);
+    el.dispatchEvent(new Event('input',{bubbles:true}));
+    el.dispatchEvent(new Event('change',{bubbles:true}));
+  }
+  function setBtnBusy(btn,busy,label){
+    if(!btn)return;
+    if(!btn.dataset.origHtml)btn.dataset.origHtml=btn.innerHTML;
+    btn.disabled=busy;
+    btn.innerHTML=busy&&label?label:btn.dataset.origHtml;
+  }
+  async function geocodeAddress(address){
+    const key=address.trim().toLowerCase();
+    if(GEO_CACHE.has(key))return GEO_CACHE.get(key);
+    const url='https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(address.trim());
+    const resp=await fetch(url,{headers:{Accept:'application/json'}});
+    if(!resp.ok)throw new Error('Geocoding failed ('+resp.status+')');
+    const data=await resp.json();
+    if(!Array.isArray(data)||!data[0])throw new Error('Address not found: '+address);
+    const coords={lat:Number(data[0].lat),lon:Number(data[0].lon)};
+    GEO_CACHE.set(key,coords);
+    return coords;
+  }
+  async function fetchRoute(origin,dest){
+    const [a,b]=await Promise.all([geocodeAddress(origin),geocodeAddress(dest)]);
+    const url=`https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${b.lon},${b.lat}?overview=false`;
+    const resp=await fetch(url);
+    if(!resp.ok)throw new Error('Routing failed ('+resp.status+')');
+    const data=await resp.json();
+    const leg=data&&data.routes&&data.routes[0];
+    if(!leg||!Number.isFinite(leg.distance)||!Number.isFinite(leg.duration))throw new Error('No route returned');
+    return{
+      miles:Math.round((leg.distance/1609.344)*10)/10,
+      minutes:Math.max(1,Math.round(leg.duration/60)),
+      hours:Math.round((leg.duration/3600)*100)/100
+    };
+  }
+  async function runRouteLookup(tag,btn,origin,dest){
+    if(!origin.trim()||!dest.trim()){
+      alert('Please enter both addresses before looking up this route.');
+      return;
+    }
+    setBtnBusy(btn,true,'⏳...');
+    try{
+      const r=await fetchRoute(origin,dest);
+      if(tag==='site'){setNumField('d-smi',r.miles);setNumField('d-smn',r.minutes);}
+      else if(tag==='dump'){setNumField('d-dmi',r.miles);setNumField('d-dhr',r.hours);}
+      else if(tag==='rent'){setNumField('r-mi',r.miles);setNumField('r-hr',r.hours);}
+    }catch(err){
+      alert('Route lookup failed: '+(err.message||'Unknown error'));
+    }finally{
+      setBtnBusy(btn,false);
+    }
+  }
+
+  $('m-site').onclick=()=>runRouteLookup('site',$('m-site'),$('s-home').value,$('c-addr').value);
+  $('m-dump').onclick=()=>runRouteLookup('dump',$('m-dump'),$('c-addr').value,getDumpAddr());
+  $('m-rent').onclick=()=>runRouteLookup('rent',$('m-rent'),$('s-home').value,$('s-rent').value);
+  $('m-gas').onclick=()=>{
+    const gasEl=$('c-gas');
+    if(gasEl){gasEl.focus();gasEl.select();}
+  };
 
   $('save-def').onclick=()=>{
     try{localStorage.setItem(KEY,JSON.stringify({rate:n('s-rate'),eqFee:n('s-eq'),dmpFee:n('s-dmp'),mpg:n('s-mpg'),gas:$('c-gas').value.trim(),home:$('s-home').value,dump:getDumpAddr(),rent:$('s-rent').value}));}catch(e){}
