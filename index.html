@@ -154,6 +154,7 @@
 (function(){
   const KEY='arb_bid_cfg_v3';
   const DUMPS=['2250 N 200 W, Provo, UT','1625 S Industrial Pkwy, Provo, UT 84601'];
+  const GAS_API='https://script.google.com/macros/s/AKfycby8mOzTo2gerxn_yFh6xo_YzIwZtEnxRwFWU4Kqajm3ApNh-sO-9qQncvwVWVD7PKsX/exec';
   const DEF={rate:75,dumpLab:0.4,eqFee:10,dmpFee:5,mpg:20,gas:'',tL:8,tW:4,tH:3,pack:0.65,home:'1357 Cinnamon Ridge Circle Provo, UT 84606',dump:DUMPS[0],rent:'Home Depot, Provo, UT'};
   let saved={};
   try{saved=JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){}
@@ -287,14 +288,30 @@
       setBtnBusy(btn,false);
     }
   }
+  async function runGasLookup(btn){
+    const gasEl=$('c-gas');
+    setBtnBusy(btn,true,'⏳...');
+    try{
+      const resp=await fetch(GAS_API+'?t='+Date.now(),{cache:'no-store'});
+      if(!resp.ok)throw new Error('Gas lookup failed ('+resp.status+')');
+      const data=await resp.json();
+      const val=parseFloat(data&&data.price);
+      if(Number.isFinite(val)&&val>0){
+        setNumField('c-gas',val.toFixed(2));
+      }else if(gasEl){
+        gasEl.focus();gasEl.select();
+      }
+    }catch(err){
+      if(gasEl){gasEl.focus();gasEl.select();}
+    }finally{
+      setBtnBusy(btn,false);
+    }
+  }
 
   $('m-site').onclick=()=>runRouteLookup('site',$('m-site'),$('s-home').value,$('c-addr').value);
   $('m-dump').onclick=()=>runRouteLookup('dump',$('m-dump'),$('c-addr').value,getDumpAddr());
   $('m-rent').onclick=()=>runRouteLookup('rent',$('m-rent'),$('s-home').value,$('s-rent').value);
-  $('m-gas').onclick=()=>{
-    const gasEl=$('c-gas');
-    if(gasEl){gasEl.focus();gasEl.select();}
-  };
+  $('m-gas').onclick=()=>runGasLookup($('m-gas'));
 
   $('save-def').onclick=()=>{
     try{localStorage.setItem(KEY,JSON.stringify({rate:n('s-rate'),eqFee:n('s-eq'),dmpFee:n('s-dmp'),mpg:n('s-mpg'),gas:$('c-gas').value.trim(),home:$('s-home').value,dump:getDumpAddr(),rent:$('s-rent').value}));}catch(e){}
@@ -366,4 +383,3 @@
 </script>
 </body>
 </html>
-
